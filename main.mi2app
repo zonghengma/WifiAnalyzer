@@ -1,0 +1,127 @@
+#!/usr/bin/python
+#import os
+#import sys
+
+#print "enter"
+#from jnius import autoclass, cast
+#import kivy
+#
+#from mobile_insight.analyzer.analyzer import *
+#
+#print "enter"
+
+
+from service import mi2app_utils as util
+from mobile_insight.analyzer import Analyzer
+import os
+import sys
+import shutil
+import traceback
+
+import subprocess
+import commands
+
+import time
+
+#import mi2app_utils
+#from mobile_insight.monitor import OnlineMonitor
+#from logging_analyzer import LoggingAnalyzer
+from jnius import autoclass, cast
+
+
+class WifiAnalyzer(Analyzer):
+	def __init__(self):
+		Analyzer.__init__(self);
+
+		#`self.search_terms = ["wlan0: Associated with", "wlan0: State", "wlan0: CTRL-EVENT", "wlan0: Considering connect", "wlan0: Request", "selected BSS"]
+		self.search_terms = ["wpa_supplicant"]
+
+		WifiInfoClass = autoclass("android.net.wifi.WifiInfo")
+		WifiManagerClass = autoclass("android.net.wifi.WifiManager")
+		ActivityClass = autoclass('android.app.Activity')
+		
+		#PythonActivity = autoclass('org.kivy.android.PythonActivity')
+		PythonService = autoclass('org.kivy.android.PythonService')
+		pyService = PythonService.mService
+		Context = autoclass("android.content.Context")
+		print "enter"
+		#activity = cast("android.app.Activity", autoclass("org.renpy.android.PythonActivity").mActivity)
+		#activity = cast("android.app.Activity", autoclass("org.kivy.android.PythonActivity").mActivity)
+		#activity = cast('android.app.Activity', PythonActivity.mActivity)#PythonActivity.mActivity
+		#activity = PythonActivity.mActivity
+		self.mWifiManager = pyService.getSystemService(Context.WIFI_SERVICE)
+		self.mWifiInfo = self.mWifiManager.getConnectionInfo()
+		#context = ContextClass()
+		#wifi_manager = cast(WifiManagerClass, activity.getApplicationContext().getSystemService(ContextClass.WIFI_SERVICE))
+		#wifi_manager = ContextClass.getSystemService(WifiManagerClass)
+		#wifi_manager = WifiManagerClass()
+		#mWifiInfo = cast(WifiInfoClass, wifi_manager.getConnectionInfo())
+
+	def run(self):
+		self.log_info("ha?")
+		self.log_info(self.mWifiInfo.getSSID())
+		#cp = subprocess.run(['logcat', '-d'], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+		#self.log_info('aaa')
+		#process = subprocess.Popen(['logcat', '|', 'grep', 'wpa_supplicant'], stdout=subprocess.PIPE)
+		#process = subprocess.Popen(['logcat', '*:s', '\"wpa_supplicant\"'], stdout=subprocess.PIPE)
+		#process = subprocess.Popen(['logcat'], stdout=subprocess.PIPE)#, '-s', 'wpa_supplicant'], stdout=subprocess.PIPE)
+		self.log_info('bbb')
+		#stdout = process.communicate()[0]
+		#process.communicate()
+		self.log_info('ccc')
+		while True:
+			#self.log_info('hha')
+			output = commands.getoutput('logcat -d | grep wpa_supplicant').split('\n')
+			self.log_info(str(len(output)))
+			for line in output:
+				#if any(s in line for s in self.search_terms):
+				#if "wpa_supplicant" in line:
+				self.log_info(line)
+			time.sleep(5)
+			#self.log_info(commands.getoutput('logcat -d'))
+			#ioutput = process.stdout.readline()
+			#if output == '' and process.poll() is not None:
+			#	break
+		#	if output:
+		#		self.log_info(output.strip())
+			#if any(s in output for s in self.search_terms):
+			#	self.log_info(output)
+			#process.poll()
+		
+
+#print mWifiInfo.getSSID()
+#print mWifiInfo.getFrequency()
+#print mWifiInfo.getHiddenSSID()
+#print mWifiInfo.getIpAddress()
+#print mWifiInfo.getLinkSpeed()
+#cache_directory = mi2app_utils.get_cache_dir()
+#files_directory = mi2app_utils.get_files_dir()
+#log_directory   = os.path.join(cache_directory, "mi2log")
+#app_directory   = "/sdcard/mobileinsight/plugins/NetLoggerCFG"
+#fifo_path       = os.path.join(cache_directory, "diag_revealer_fifo")
+#
+#src = OnlineMonitor()
+#src.set_skip_decoding(True)
+#src.set_log_directory(log_directory)
+## src.set_log_cut_size(float(200.0))  # 1 G
+#src.set_log_cut_size(float(plugin_config['mi_log_size']) / 1000.0)
+#
+#
+#configSrc = os.path.join(app_directory, "Diag.cfg")
+#configDst = os.path.join(cache_directory, "Diag.cfg")
+#
+#if os.path.isfile(configSrc):
+#    shutil.copyfile(configSrc, configDst)
+#else:
+#    src.enable_log(list_logEnabled)
+#
+#analyzer = WifiAnalyzer(plugin_config)
+#analyzer.set_source(src)
+#
+#src.run()
+#
+
+analyzer = WifiAnalyzer()
+#util.run_shell_cmd("echo hello")
+analyzer.run()
+
