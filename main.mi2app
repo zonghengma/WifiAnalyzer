@@ -1,15 +1,10 @@
 #!/usr/bin/python
-#import os
-#import sys
+'''
+It pulls out given process name's log from Android logcat.
 
-#print "enter"
-#from jnius import autoclass, cast
-#import kivy
-#
-#from mobile_insight.analyzer.analyzer import *
-#
-#print "enter"
-
+Author  : Zengwen Yuan
+Version : 1.0  Init version
+'''
 
 from service import mi2app_utils as util
 from mobile_insight.analyzer import Analyzer
@@ -23,105 +18,80 @@ import commands
 
 import time
 
-#import mi2app_utils
-#from mobile_insight.monitor import OnlineMonitor
-#from logging_analyzer import LoggingAnalyzer
 from jnius import autoclass, cast
 
+ANDROID_SHELL = "/system/bin/sh"
 
-class WifiAnalyzer(Analyzer):
-	def __init__(self):
-		Analyzer.__init__(self);
+class LogcatMonitor(Analyzer):
+    def __init__(self):
+        Analyzer.__init__(self);
 
-		#`self.search_terms = ["wlan0: Associated with", "wlan0: State", "wlan0: CTRL-EVENT", "wlan0: Considering connect", "wlan0: Request", "selected BSS"]
-		self.search_terms = ["wpa_supplicant"]
+        self.search_terms = ["wpa_supplicant"]
 
-		WifiInfoClass = autoclass("android.net.wifi.WifiInfo")
-		WifiManagerClass = autoclass("android.net.wifi.WifiManager")
-		ActivityClass = autoclass('android.app.Activity')
-		
-		#PythonActivity = autoclass('org.kivy.android.PythonActivity')
-		PythonService = autoclass('org.kivy.android.PythonService')
-		pyService = PythonService.mService
-		Context = autoclass("android.content.Context")
-		print "enter"
-		#activity = cast("android.app.Activity", autoclass("org.renpy.android.PythonActivity").mActivity)
-		#activity = cast("android.app.Activity", autoclass("org.kivy.android.PythonActivity").mActivity)
-		#activity = cast('android.app.Activity', PythonActivity.mActivity)#PythonActivity.mActivity
-		#activity = PythonActivity.mActivity
-		self.mWifiManager = pyService.getSystemService(Context.WIFI_SERVICE)
-		self.mWifiInfo = self.mWifiManager.getConnectionInfo()
-		#context = ContextClass()
-		#wifi_manager = cast(WifiManagerClass, activity.getApplicationContext().getSystemService(ContextClass.WIFI_SERVICE))
-		#wifi_manager = ContextClass.getSystemService(WifiManagerClass)
-		#wifi_manager = WifiManagerClass()
-		#mWifiInfo = cast(WifiInfoClass, wifi_manager.getConnectionInfo())
+        WifiInfoClass = autoclass("android.net.wifi.WifiInfo")
+        WifiManagerClass = autoclass("android.net.wifi.WifiManager")
+        ActivityClass = autoclass('android.app.Activity')
+        
+        #PythonActivity = autoclass('org.kivy.android.PythonActivity')
+        PythonService = autoclass('org.kivy.android.PythonService')
+        pyService = PythonService.mService
+        Context = autoclass("android.content.Context")
+        print "enter"
 
-	def run(self):
-		self.log_info("ha?")
-		self.log_info(self.mWifiInfo.getSSID())
-		#cp = subprocess.run(['logcat', '-d'], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-		#self.log_info('aaa')
-		#process = subprocess.Popen(['logcat', '|', 'grep', 'wpa_supplicant'], stdout=subprocess.PIPE)
-		#process = subprocess.Popen(['logcat', '*:s', '\"wpa_supplicant\"'], stdout=subprocess.PIPE)
-		#process = subprocess.Popen(['logcat'], stdout=subprocess.PIPE)#, '-s', 'wpa_supplicant'], stdout=subprocess.PIPE)
-		self.log_info('bbb')
-		#stdout = process.communicate()[0]
-		#process.communicate()
-		self.log_info('ccc')
-		while True:
-			#self.log_info('hha')
-			output = commands.getoutput('logcat -d | grep wpa_supplicant').split('\n')
-			self.log_info(str(len(output)))
-			for line in output:
-				#if any(s in line for s in self.search_terms):
-				#if "wpa_supplicant" in line:
-				self.log_info(line)
-			time.sleep(5)
-			#self.log_info(commands.getoutput('logcat -d'))
-			#ioutput = process.stdout.readline()
-			#if output == '' and process.poll() is not None:
-			#	break
-		#	if output:
-		#		self.log_info(output.strip())
-			#if any(s in output for s in self.search_terms):
-			#	self.log_info(output)
-			#process.poll()
-		
+        self.mWifiManager = pyService.getSystemService(Context.WIFI_SERVICE)
+        self.mWifiInfo = self.mWifiManager.getConnectionInfo()
+        self.ps_num = -1
+        self._get_thread_pid("wpa")
 
-#print mWifiInfo.getSSID()
-#print mWifiInfo.getFrequency()
-#print mWifiInfo.getHiddenSSID()
-#print mWifiInfo.getIpAddress()
-#print mWifiInfo.getLinkSpeed()
-#cache_directory = mi2app_utils.get_cache_dir()
-#files_directory = mi2app_utils.get_files_dir()
-#log_directory   = os.path.join(cache_directory, "mi2log")
-#app_directory   = "/sdcard/mobileinsight/plugins/NetLoggerCFG"
-#fifo_path       = os.path.join(cache_directory, "diag_revealer_fifo")
-#
-#src = OnlineMonitor()
-#src.set_skip_decoding(True)
-#src.set_log_directory(log_directory)
-## src.set_log_cut_size(float(200.0))  # 1 G
-#src.set_log_cut_size(float(plugin_config['mi_log_size']) / 1000.0)
-#
-#
-#configSrc = os.path.join(app_directory, "Diag.cfg")
-#configDst = os.path.join(cache_directory, "Diag.cfg")
-#
-#if os.path.isfile(configSrc):
-#    shutil.copyfile(configSrc, configDst)
-#else:
-#    src.enable_log(list_logEnabled)
-#
-#analyzer = WifiAnalyzer(plugin_config)
-#analyzer.set_source(src)
-#
-#src.run()
-#
+    def _get_thread_pid(self, proc_name):
+        proc = subprocess.Popen(
+            "su -c ps | grep -i %s" %
+            proc_name,
+            executable=ANDROID_SHELL,
+            shell=True,
+            stdout=subprocess.PIPE)
+        out = proc.communicate()
+        # self.log_warning(str(out))
+        # self.log_warning(str(out[0]))
+        # self.log_warning(str(out[0].split('\n')[0]))
+        try:
+            self.ps_num = str(out[0].split('\n')[0]).split()[1]
+            self.log_warning("_get_thread_pid() self.ps_num = %s" % self.ps_num)
+        except BaseException:
+            self.log_warning(
+                "Some exception happens for getting %s threads" %
+                proc_name)
+        # try:
+        #     match_lines = str(proc.communicate()[0].split('\n'))
+        #     for match in match_lines:
+        #         self.log_warning("Thread match = %s" % match)
+        #         self.ps_num = match.split()[1]
+        #         self.log_warning(self.ps_num)
+        # except BaseException:
+        #     self.log_warning(
+        #         "Some exception happens for getting %s threads" %
+        #         proc_name)
+        #     self.ps_num = -1
 
-analyzer = WifiAnalyzer()
-#util.run_shell_cmd("echo hello")
+    def run(self):
+        self.log_info("ha?")
+        self.log_info(self.mWifiInfo.getSSID())
+
+        self.log_warning("run(): I got self.ps_num = %s" % self.ps_num)
+
+        while True:
+            try:
+                #lines = util.run_shell_cmd("logcat --pid %s -d" % self.ps_num, True).split('\n')
+                self.log_info("running")
+                lines = util.run_shell_cmd("logcat -d -s wpa_supplicant", True).split('\n')
+                # lines = util.run_shell_cmd("logcat --pid 3372 -d", True).split('\n')
+                for line in lines[1:]:
+                    self.log_info(line)
+            except:
+                self.log_warning("ex4")
+            # proc = subprocess.Popen("su -c logcat -c", executable=ANDROID_SHELL, shell=True, stdout=subprocess.PIPE)
+            time.sleep(1)
+
+
+analyzer = LogcatMonitor()
 analyzer.run()
-
