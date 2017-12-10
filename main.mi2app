@@ -93,11 +93,11 @@ class LogcatMonitor(Analyzer):
                     if output != None:
                         self.log_info(output)
                         write_log.write(output + '\n')
-                util.run_shell_cmd("logcat -c", True)
+            util.run_shell_cmd("logcat -c", True)
             #except:
             #    self.log_warning("ex4")
             # proc = subprocess.Popen("su -c logcat -c", executable=ANDROID_SHELL, shell=True, stdout=subprocess.PIPE)
-                time.sleep(1)
+            time.sleep(1)
 
 
 analyzer = LogcatMonitor()
