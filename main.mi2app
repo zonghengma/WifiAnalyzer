@@ -9,7 +9,7 @@ import traceback
 
 import subprocess
 import commands
-
+import datetime
 import time
 
 from logparser import *
@@ -39,6 +39,11 @@ class LogcatMonitor(Analyzer):
         self.mWifiInfo = self.mWifiManager.getConnectionInfo()
         self.ps_num = -1
         self._get_thread_pid("wpa")
+        
+        self.__log_dir = util.get_mobileinsight_log_path()
+        self.__log_timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.wifi_base_log = "WiFiAnalyzer_log_%s.txt" % (self.__log_timestamp)
+        self.wifi_abs_log = os.path.join(self.__log_dir, self.wifi_base_log)
 
     def _get_thread_pid(self, proc_name):
         proc = subprocess.Popen(
@@ -82,15 +87,17 @@ class LogcatMonitor(Analyzer):
             #self.log_info("running")
             lines = util.run_shell_cmd("logcat -d -s wpa_supplicant", True).split('\n')
             # lines = util.run_shell_cmd("logcat --pid 3372 -d", True).split('\n')
-            for line in lines[1:]:
-                output = self.parser.parse(line)
-                if output != None:
-                    self.log_info(output)
-            util.run_shell_cmd("logcat -c", True)
+            with open(self.wifi_abs_log, 'a') as write_log:
+                for line in lines[1:]:
+                    output = self.parser.parse(line)
+                    if output != None:
+                        self.log_info(output)
+                        write_log.write(output + '\n')
+                util.run_shell_cmd("logcat -c", True)
             #except:
             #    self.log_warning("ex4")
             # proc = subprocess.Popen("su -c logcat -c", executable=ANDROID_SHELL, shell=True, stdout=subprocess.PIPE)
-            time.sleep(1)
+                time.sleep(1)
 
 
 analyzer = LogcatMonitor()
