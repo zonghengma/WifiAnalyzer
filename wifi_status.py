@@ -4,18 +4,24 @@ class WifiStatus:
 		self.info = ""
 		self.SSID = ""
 		self.mac = ""
-		
+		self.changed = False
+
 	def setSSID(self, ssid):
 		self.SSID = ssid
 	
 	def updateState(self, new_state, inf):
-		self.state = new_state
-		self.info = inf
+		if new_state != self.state or inf != self.info:
+			self.changed = True
+			self.state = new_state
+			self.info = inf
+			return True
+		return False
 
 	def getState(self):
 		return self.state
 
 	def getStateString(self):
+		self.changed = False
 		if self.state == 0:
 			return "Associated with: " + self.info
 		elif self.state == 1:

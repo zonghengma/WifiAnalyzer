@@ -71,10 +71,10 @@ class LogcatMonitor(Analyzer):
         #     self.ps_num = -1
 
     def run(self):
-        self.log_info("ha?")
+        self.log_info("starting")
         self.log_info(self.mWifiInfo.getSSID())
 
-        self.log_warning("run(): I got self.ps_num = %s" % self.ps_num)
+        self.log_warning("wpa_supplicant pid is %s" % self.ps_num)
 
         while True:
             #try:
@@ -84,7 +84,7 @@ class LogcatMonitor(Analyzer):
             # lines = util.run_shell_cmd("logcat --pid 3372 -d", True).split('\n')
             for line in lines[1:]:
                 output = self.parser.parse(line)
-                if(output != ""):
+                if output != None:
                     self.log_info(output)
             util.run_shell_cmd("logcat -c", True)
             #except:
