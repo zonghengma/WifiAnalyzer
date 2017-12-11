@@ -9,7 +9,8 @@ class LogParser:
 
 	def parse(self, line):
 		for i in range(len(self.search_terms)):
-			if self.search_terms[i] in line and self.status.updateState(i, line):
+			start_index = line.find(self.search_terms[i])
+			if start_index != -1 and self.status.updateState(i, line[start_index + len(self.search_terms[i]): ]):
 				return self.status.getStateString() 
 	#			
         #if any(s in line for s in self.search_terms):
