@@ -1,1 +1,1 @@
-Information about WiFi Network
+A Wi-Fi event logger
